@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HSR Success Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header>
+    <h1>High-Speed Rail Success Predictor</h1>
+  </header>
+
+  <div class="container">
+    {% if not probability %}
+    <div class="card">
+      <form method="post">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="country">Select Country</label>
+            <select name="country" id="country" required>
+              <option value="" disabled selected>-- pick country --</option>
+              {% for c in countries %}
+                <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="model">Select Model</label>
+            <select name="model" id="model" required>
+              <option value="" disabled selected>-- pick model --</option>
+              {% for m in model_options %}
+                <option value="{{ m.name }}">
+                  {{ m.name }} (LOOCV: {{ (m.accuracy*100)|round(1) }}%)
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        {% if selected_country %}
+        <div class="form-row">
+          <div class="form-group">
+            <label>Region</label>
+            <div>{{ region }}</div>
+          </div>
+          <div class="form-group">
+            <label>Income Level</label>
+            <div>{{ income_level }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hsr_length">Planned HSR Length (km)</label>
+            <input name="hsr_length" id="hsr_length" type="number" step="any" required>
+          </div>
+          <div class="form-group">
+            <label for="budget">HSR Budget (USD millions)</label>
+            <input name="budget" id="budget" type="number" step="any" required>
+          </div>
+        </div>
+        <button type="submit">Predict Success Probability</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="card">
+      <div class="result">
+        <h2>Results for {{ selected_country }}</h2>
+        <p><strong>Model:</strong> {{ selected_model }} (LOOCV: 
+          {{ (model_options | selectattr('name','equalto',selected_model) | first).accuracy*100|round(1) }}%)</p>
+        <p><strong>Region:</strong> {{ region }}<br>
+           <strong>Income Level:</strong> {{ income_level }}</p>
+        <p><strong>Predicted probability of success:</strong> {{ probability }}</p>
+      </div>
+      <a href="/" class="btn">Start Over</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <footer>
+    &copy; {{config['SERVER_NAME'] or ''}} HSR Predictor &bull; Built with Flask
+  </footer>
+</body>
+</html>
